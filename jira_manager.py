@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 """
-Jira Manager Script
-A Python script to connect to private Jira instance and manage tickets.
+🃏 Jora - Because Jira is a Joke!
+A Python script that makes Jira actually usable (what a concept!).
+
+Making ticket management less painful, one batch at a time.
 Features:
-- Connect to private Jira instance
-- Filter tickets by project name, release, and assignee
-- Edit original estimate and work log
+- Connect to private Jira instances (the real ones, not the broken UI)
+- Filter tickets by project, release, and assignee (properly!)
+- Batch edit original estimates and work logs (efficiently!)
+- Actually works unlike the web interface 😉
 """
 
 import os
@@ -18,7 +21,7 @@ import getpass
 load_dotenv()
 
 
-class JiraManager:
+class JoraManager:
     def __init__(self):
         self.jira = None
         self.server_url = "https://your-jira-instance.example.com"
@@ -676,10 +679,11 @@ class JiraManager:
 
 def main():
     """Main function with interactive menu"""
-    jira_manager = JiraManager()
+    jira_manager = JoraManager()
 
-    print("🎯 Jira Manager - Private Instance Connector")
-    print("=" * 50)
+    print("� Jora - Because Jira is a Joke!")
+    print("💫 Making ticket management less painful since today")
+    print("=" * 55)
 
     # Connect to Jira
     if not jira_manager.connect():

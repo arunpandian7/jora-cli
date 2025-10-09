@@ -1,14 +1,17 @@
-# Jira Manager
+# 🃏 Jora - Because Jira is a Joke!
 
-A Python script to connect to your private Jira instance (https://your-jira-instance.example.com) and manage tickets efficiently.
+*Making ticket management less painful, one batch at a time* 😉
 
-## Features
+A Python script that actually makes Jira usable (revolutionary concept!). Connect to your private Jira instance and manage tickets efficiently - without pulling your hair out.
 
-- 🔐 **Secure Authentication**: Connect to private Jira instance with credentials
-- 🔍 **Advanced Filtering**: Filter tickets by project name, release/fix version, and assignee
-- 📝 **Time Management**: Edit original estimates and log work time
-- 📋 **Ticket Details**: View comprehensive ticket information
-- 🎯 **Interactive Menu**: Easy-to-use command-line interface
+## Features (That Actually Work!)
+
+- 🔐 **Secure Authentication**: Connect to private Jira instances (unlike their broken SSO)
+- 🔍 **Smart Filtering**: Filter tickets by project, release, assignee (properly, not like the web UI)
+- 📝 **Batch Time Management**: Edit original estimates and log work in bulk (efficiency!)
+- � **Intelligent Ticket Detection**: Find incomplete tickets automatically
+- 📋 **Readable Ticket Details**: View ticket info without the web interface nightmare
+- 🎯 **Sane Command Interface**: Because clicking through 50 menus is ridiculous
 
 ## Setup
 
@@ -32,7 +35,7 @@ A Python script to connect to your private Jira instance (https://your-jira-inst
    # Edit .env with your email and API token
    ```
 
-4. **Run the Script**:
+4. **Run Jora (The Better Way)**:
    ```bash
    ./run.sh
    # OR
@@ -65,14 +68,14 @@ A Python script to connect to your private Jira instance (https://your-jira-inst
 - Token input is masked using getpass
 - Works with SSO-enabled Jira instances
 
-## Example Workflow
+## Example Workflow (The Sane Way)
 
-1. **Connect** to Jira instance
-2. **Filter** tickets by project `ARTS`, release `v2.1.0`, assignee `me`
-3. **View** ticket list with key details
-4. **Select** a ticket to view full details
-5. **Edit** original estimate or log work time
-6. **Repeat** as needed
+1. **Connect** to Jira instance (once, not every 5 minutes like the web UI)
+2. **Batch Find** incomplete tickets by project `ARTS`, assignee `me`
+3. **Review** tickets in a readable table (revolutionary!)
+4. **Batch Update** original estimates and work logs efficiently
+5. **Actually Get Work Done** instead of fighting with Jira's interface
+6. **Profit** from increased productivity 💰
 
 ## Troubleshooting
 

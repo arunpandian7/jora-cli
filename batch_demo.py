@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
 """
-Batch Time Tracking Demo
-Demonstrates the new batch processing features for time tracking
+🃏 Jora Batch Processing Demo - Because Jira is a Joke!
+Demonstrates how to efficiently batch process tickets
+(Something Jira's web interface could never do properly)
 """
 
-from jira_manager import JiraManager
+from jira_manager import JoraManager
 
 
 def demo_batch_processing():
     """Demo the batch time tracking functionality"""
 
-    print("🎯 Batch Time Tracking Demo")
-    print("=" * 50)
+    print("� Jora Batch Processing Demo")
+    print("💫 Watch actual efficiency in action!")
+    print("=" * 55)
 
-    # Initialize and connect
-    jira_manager = JiraManager()
+    # Initialize and connect (the working way)
+    jira_manager = JoraManager()
     if not jira_manager.connect():
         print("❌ Failed to connect to Jira")
         return
@@ -71,8 +73,9 @@ def quick_batch_example():
 
 
 if __name__ == "__main__":
-    print("🎯 Jira Batch Time Tracking")
-    print("=" * 30)
+    print("� Jora Batch Time Tracking")
+    print("💫 Making batch processing actually work!")
+    print("=" * 40)
     print("1. Run interactive demo")
     print("2. Show workflow overview")
     print("0. Exit")

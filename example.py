@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 """
-Example usage of the Jira Manager
-This script demonstrates how to use the JiraManager class programmatically
+🃏 Jora Usage Examples - Because Jira is a Joke!
+This script demonstrates how to use Jora programmatically
+(You know, actually getting stuff done efficiently)
 """
 
-from jira_manager import JiraManager
+from jira_manager import JoraManager
 
 
 def example_usage():
     """Example of how to use JiraManager programmatically"""
 
-    # Initialize manager
-    jira_manager = JiraManager()
+    # Initialize Jora manager (the better way)
+    jira_manager = JoraManager()
 
     # Connect (will prompt for credentials if not in .env)
     if not jira_manager.connect():
@@ -37,9 +38,8 @@ def example_usage():
     )
     jira_manager.display_tickets(release_issues)
 
-    print(
-        "\n✅ Example completed! Use the interactive script (jira_manager.py) for full functionality."
-    )
+    print("\n✅ Jora example completed! Use the interactive script for full functionality.")
+    print("🃏 See how much better this is than using Jira's web interface? 😉")
 
 
 if __name__ == "__main__":

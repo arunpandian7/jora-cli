@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Quick Setup Script for Jira Manager
-Run this to quickly configure your environment
+🃏 Jora Setup - Because Jira is a Joke!
+Quick setup script that actually works (unlike Jira's setup process)
 """
 
 import os
@@ -9,8 +9,9 @@ import os
 
 def setup():
     """Quick setup for Jira Manager"""
-    print("🚀 Jira Manager - Quick Setup")
-    print("=" * 40)
+    print("🃏 Jora Setup - Because Jira is a Joke!")
+    print("💫 Setting up something that actually works...")
+    print("=" * 50)
 
     # Check if .env exists
     if os.path.exists(".env"):
@@ -46,8 +47,9 @@ JIRA_API_TOKEN={api_token}
         f.write(env_content)
 
     print("\n✅ Configuration saved to .env")
-    print("🎯 You can now run: uv run jira_manager.py")
-    print("🔒 Note: .env file contains sensitive information and is git-ignored")
+    print("� You can now run Jora: uv run jira_manager.py")
+    print("🔒 Note: .env file is secure and git-ignored (unlike Jira's security)")
+    print("💫 Ready to make ticket management less painful!")
 
 
 if __name__ == "__main__":
