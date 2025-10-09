@@ -9,36 +9,40 @@ from jira_manager import JiraManager
 
 def demo_batch_processing():
     """Demo the batch time tracking functionality"""
-    
+
     print("🎯 Batch Time Tracking Demo")
     print("=" * 50)
-    
+
     # Initialize and connect
     jira_manager = JiraManager()
     if not jira_manager.connect():
         print("❌ Failed to connect to Jira")
         return
-    
+
     print("\n🔍 Demo: Finding incomplete tickets...")
-    
+
     # Example: Find incomplete tickets in ARTS project assigned to current user
     incomplete_tickets = jira_manager.find_incomplete_tickets(
-        project_name="ARTS",
-        assignee="me",
-        max_results=10
+        project_name="ARTS", assignee="me", max_results=10
     )
-    
+
     if not incomplete_tickets:
         print("✅ No incomplete tickets found!")
         return
-    
+
     print(f"\n📋 Found {len(incomplete_tickets)} incomplete tickets:")
     jira_manager.display_incomplete_tickets(incomplete_tickets)
-    
+
     # Ask if user wants to proceed with batch update
-    proceed = input(f"\n🚀 Start batch update for these {len(incomplete_tickets)} tickets? (y/N): ").strip().lower()
-    
-    if proceed == 'y':
+    proceed = (
+        input(
+            f"\n🚀 Start batch update for these {len(incomplete_tickets)} tickets? (y/N): "
+        )
+        .strip()
+        .lower()
+    )
+
+    if proceed == "y":
         print("\n🔄 Starting batch update process...")
         jira_manager.batch_update_time_tracking(incomplete_tickets)
     else:
@@ -72,9 +76,9 @@ if __name__ == "__main__":
     print("1. Run interactive demo")
     print("2. Show workflow overview")
     print("0. Exit")
-    
+
     choice = input("\nChoose option (0-2): ").strip()
-    
+
     if choice == "1":
         demo_batch_processing()
     elif choice == "2":

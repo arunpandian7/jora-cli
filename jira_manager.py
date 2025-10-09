@@ -391,99 +391,125 @@ class JiraManager:
 
         except Exception as e:
             print(f"❌ Error inspecting fields: {str(e)}")
-    
-    def find_incomplete_tickets(self, 
-                               project_name: Optional[str] = None,
-                               release: Optional[str] = None, 
-                               assignee: Optional[str] = None,
-                               max_results: int = 50) -> List[Issue]:
+
+    def find_incomplete_tickets(
+        self,
+        project_name: Optional[str] = None,
+        release: Optional[str] = None,
+        assignee: Optional[str] = None,
+        max_results: int = 50,
+    ) -> List[Issue]:
         """Find tickets without original estimate or incomplete work log"""
         if not self.jira:
             print("❌ Not connected to Jira. Please connect first.")
             return []
-        
+
         # Build JQL query for basic filtering
         jql_parts = []
-        
+
         if project_name:
             jql_parts.append(f'project = "{project_name}"')
-        
+
         if release:
             jql_parts.append(f'fixVersion = "{release}"')
-        
+
         if assignee:
-            if assignee.lower() == 'me':
-                jql_parts.append('assignee = currentUser()')
+            if assignee.lower() == "me":
+                jql_parts.append("assignee = currentUser()")
             else:
                 jql_parts.append(f'assignee = "{assignee}"')
-        
+
         # Add condition for tickets without original estimate OR with remaining time
-        jql_parts.append('(originalEstimate is EMPTY OR remainingEstimate > 0)')
-        
-        jql = ' AND '.join(jql_parts) if jql_parts else 'originalEstimate is EMPTY OR remainingEstimate > 0'
-        
+        jql_parts.append("(originalEstimate is EMPTY OR remainingEstimate > 0)")
+
+        jql = (
+            " AND ".join(jql_parts)
+            if jql_parts
+            else "originalEstimate is EMPTY OR remainingEstimate > 0"
+        )
+
         try:
             issues = self.jira.search_issues(jql, maxResults=max_results)
-            
+
             # Filter further for tickets that need attention
             incomplete_tickets = []
             for issue in issues:
                 needs_estimate = not issue.fields.timeoriginalestimate
-                has_remaining_work = issue.fields.timeestimate and issue.fields.timeestimate > 0
-                
+                has_remaining_work = (
+                    issue.fields.timeestimate and issue.fields.timeestimate > 0
+                )
+
                 if needs_estimate or has_remaining_work:
                     incomplete_tickets.append(issue)
-            
-            print(f"🔍 Found {len(incomplete_tickets)} tickets needing time estimates or work completion")
+
+            print(
+                f"🔍 Found {len(incomplete_tickets)} tickets needing time estimates or work completion"
+            )
             return incomplete_tickets
-            
+
         except Exception as e:
             print(f"❌ Error searching for incomplete tickets: {str(e)}")
             return []
-    
+
     def display_incomplete_tickets(self, issues: List[Issue]):
         """Display incomplete tickets with time tracking status"""
         if not issues:
             print("No incomplete tickets found.")
             return
-        
-        print("\n" + "="*140)
-        print(f"{'#':<3} {'Key':<15} {'Summary':<45} {'Status':<12} {'Original Est':<12} {'Time Spent':<12} {'Remaining':<12}")
-        print("="*140)
-        
+
+        print("\n" + "=" * 140)
+        print(
+            f"{'#':<3} {'Key':<15} {'Summary':<45} {'Status':<12} {'Original Est':<12} {'Time Spent':<12} {'Remaining':<12}"
+        )
+        print("=" * 140)
+
         for i, issue in enumerate(issues, 1):
             key = issue.key
-            summary = (issue.fields.summary[:42] + "...") if len(issue.fields.summary) > 45 else issue.fields.summary
+            summary = (
+                (issue.fields.summary[:42] + "...")
+                if len(issue.fields.summary) > 45
+                else issue.fields.summary
+            )
             status = issue.fields.status.name[:11]
-            original_estimate = self._format_time_estimate(issue.fields.timeoriginalestimate)
+            original_estimate = self._format_time_estimate(
+                issue.fields.timeoriginalestimate
+            )
             time_spent = self._format_time_estimate(issue.fields.timespent)
             remaining = self._format_time_estimate(issue.fields.timeestimate)
-            
-            print(f"{i:<3} {key:<15} {summary:<45} {status:<12} {original_estimate:<12} {time_spent:<12} {remaining:<12}")
-        
-        print("="*140 + "\n")
-    
+
+            print(
+                f"{i:<3} {key:<15} {summary:<45} {status:<12} {original_estimate:<12} {time_spent:<12} {remaining:<12}"
+            )
+
+        print("=" * 140 + "\n")
+
     def batch_update_time_tracking(self, issues: List[Issue]):
         """Batch update time tracking for multiple tickets"""
         if not issues:
             print("No tickets to update.")
             return
-        
+
         print(f"\n🔄 Batch Time Tracking Update for {len(issues)} tickets")
         print("=" * 60)
-        
+
         updated_count = 0
         skipped_count = 0
-        
+
         for i, issue in enumerate(issues, 1):
             try:
                 print(f"\n📋 Ticket {i}/{len(issues)}: {issue.key}")
                 print(f"📝 Summary: {issue.fields.summary}")
                 print(f"📊 Current Status:")
-                print(f"   • Original Estimate: {self._format_time_estimate(issue.fields.timeoriginalestimate)}")
-                print(f"   • Time Spent: {self._format_time_estimate(issue.fields.timespent)}")
-                print(f"   • Remaining: {self._format_time_estimate(issue.fields.timeestimate)}")
-                
+                print(
+                    f"   • Original Estimate: {self._format_time_estimate(issue.fields.timeoriginalestimate)}"
+                )
+                print(
+                    f"   • Time Spent: {self._format_time_estimate(issue.fields.timespent)}"
+                )
+                print(
+                    f"   • Remaining: {self._format_time_estimate(issue.fields.timeestimate)}"
+                )
+
                 # Ask user what to do
                 print(f"\n🤔 Actions for {issue.key}:")
                 print("1. Set original estimate")
@@ -491,53 +517,65 @@ class JiraManager:
                 print("3. Set original estimate AND log work")
                 print("4. Skip this ticket")
                 print("0. Stop batch processing")
-                
+
                 choice = input("Enter your choice (0-4): ").strip()
-                
-                if choice == '0':
+
+                if choice == "0":
                     print("🛑 Batch processing stopped by user.")
                     break
-                elif choice == '4':
+                elif choice == "4":
                     print(f"⏭️ Skipping {issue.key}")
                     skipped_count += 1
                     continue
-                elif choice in ['1', '3']:
+                elif choice in ["1", "3"]:
                     # Set original estimate
                     print(f"\n⏱️ Setting original estimate for {issue.key}")
-                    estimate_str = input("Enter original estimate (e.g., '4h', '2h 30m', '90m'): ").strip()
-                    
-                    if estimate_str and estimate_str.lower() != 'skip':
-                        success = self._update_original_estimate(issue.key, estimate_str)
+                    estimate_str = input(
+                        "Enter original estimate (e.g., '4h', '2h 30m', '90m'): "
+                    ).strip()
+
+                    if estimate_str and estimate_str.lower() != "skip":
+                        success = self._update_original_estimate(
+                            issue.key, estimate_str
+                        )
                         if success:
                             print(f"✅ Updated original estimate")
                         else:
                             print(f"❌ Failed to update original estimate")
-                
-                if choice in ['2', '3']:
+
+                if choice in ["2", "3"]:
                     # Log work
                     print(f"\n⏱️ Logging work for {issue.key}")
-                    
+
                     # Get work details
-                    time_spent_str = input("Enter time spent (e.g., '2h', '90m'): ").strip()
-                    if not time_spent_str or time_spent_str.lower() == 'skip':
+                    time_spent_str = input(
+                        "Enter time spent (e.g., '2h', '90m'): "
+                    ).strip()
+                    if not time_spent_str or time_spent_str.lower() == "skip":
                         continue
-                    
+
                     # Get start date/time
-                    start_date = input("Enter start date (YYYY-MM-DD) or press Enter for today: ").strip()
-                    start_time = input("Enter start time (HH:MM) or press Enter for now: ").strip()
-                    
+                    start_date = input(
+                        "Enter start date (YYYY-MM-DD) or press Enter for today: "
+                    ).strip()
+                    start_time = input(
+                        "Enter start time (HH:MM) or press Enter for now: "
+                    ).strip()
+
                     comment = input("Enter work description: ").strip()
-                    
-                    success = self._log_work_with_datetime(issue.key, time_spent_str, comment, start_date, start_time)
+
+                    success = self._log_work_with_datetime(
+                        issue.key, time_spent_str, comment, start_date, start_time
+                    )
                     if success:
                         print(f"✅ Logged work successfully")
                         updated_count += 1
                     else:
                         print(f"❌ Failed to log work")
-                
-                if choice == '1':
+
+                if choice == "1":
                     updated_count += 1
-                
+
             except KeyboardInterrupt:
                 print(f"\n\n⚠️ Batch processing interrupted by user.")
                 break
@@ -545,26 +583,26 @@ class JiraManager:
                 print(f"❌ Error processing {issue.key}: {str(e)}")
                 skipped_count += 1
                 continue
-        
+
         print(f"\n📊 Batch Update Summary:")
         print(f"✅ Updated: {updated_count} tickets")
         print(f"⏭️ Skipped: {skipped_count} tickets")
         print(f"📋 Total: {len(issues)} tickets")
-    
+
     def _update_original_estimate(self, issue_key: str, estimate_str: str) -> bool:
         """Helper method to update original estimate"""
         try:
             estimate_seconds = self._parse_time_input(estimate_str)
             if not estimate_seconds:
                 return False
-            
+
             issue = self.jira.issue(issue_key)
-            
+
             # Try updating with time tracking
             edit_meta = self.jira.editmeta(issue_key)
-            available_fields = list(edit_meta['fields'].keys())
-            
-            if 'timetracking' in available_fields:
+            available_fields = list(edit_meta["fields"].keys())
+
+            if "timetracking" in available_fields:
                 hours = estimate_seconds // 3600
                 minutes = (estimate_seconds % 3600) // 60
                 if hours > 0 and minutes > 0:
@@ -573,54 +611,64 @@ class JiraManager:
                     jira_time_format = f"{hours}h"
                 else:
                     jira_time_format = f"{minutes}m"
-                
-                timetracking_data = {'originalEstimate': jira_time_format}
-                issue.update(fields={'timetracking': timetracking_data})
+
+                timetracking_data = {"originalEstimate": jira_time_format}
+                issue.update(fields={"timetracking": timetracking_data})
                 return True
-            
+
             return False
-            
+
         except Exception as e:
             print(f"Error updating estimate for {issue_key}: {str(e)}")
             return False
-    
-    def _log_work_with_datetime(self, issue_key: str, time_spent_str: str, comment: str, 
-                               start_date: str = "", start_time: str = "") -> bool:
+
+    def _log_work_with_datetime(
+        self,
+        issue_key: str,
+        time_spent_str: str,
+        comment: str,
+        start_date: str = "",
+        start_time: str = "",
+    ) -> bool:
         """Helper method to log work with specific date/time"""
         try:
             from datetime import datetime, timedelta
             import pytz
-            
+
             # Parse start datetime
             if start_date:
                 try:
                     if start_time:
-                        start_datetime = datetime.strptime(f"{start_date} {start_time}", "%Y-%m-%d %H:%M")
+                        start_datetime = datetime.strptime(
+                            f"{start_date} {start_time}", "%Y-%m-%d %H:%M"
+                        )
                     else:
                         start_datetime = datetime.strptime(start_date, "%Y-%m-%d")
-                        start_datetime = start_datetime.replace(hour=9, minute=0)  # Default to 9 AM
+                        start_datetime = start_datetime.replace(
+                            hour=9, minute=0
+                        )  # Default to 9 AM
                 except ValueError:
                     print("⚠️ Invalid date/time format, using current time")
                     start_datetime = datetime.now()
             else:
                 start_datetime = datetime.now()
-            
+
             # Convert to UTC (Jira expects UTC)
-            local_tz = pytz.timezone('Asia/Tokyo')  # Adjust to your timezone
+            local_tz = pytz.timezone("Asia/Tokyo")  # Adjust to your timezone
             if start_datetime.tzinfo is None:
                 start_datetime = local_tz.localize(start_datetime)
             start_datetime_utc = start_datetime.astimezone(pytz.UTC)
-            
+
             # Log work with datetime
             self.jira.add_worklog(
                 issue=issue_key,
                 timeSpent=time_spent_str,
                 comment=comment if comment else None,
-                started=start_datetime_utc
+                started=start_datetime_utc,
             )
-            
+
             return True
-            
+
         except Exception as e:
             print(f"Error logging work for {issue_key}: {str(e)}")
             return False
@@ -706,20 +754,34 @@ def main():
 
         elif choice == "7":
             print("\n🔍 Find Incomplete Tickets")
-            project_name = input("Enter project name (or press Enter to skip): ").strip() or None
-            release = input("Enter release/fix version (or press Enter to skip): ").strip() or None
-            assignee = input("Enter assignee username ('me' for yourself, or press Enter to skip): ").strip() or None
+            project_name = (
+                input("Enter project name (or press Enter to skip): ").strip() or None
+            )
+            release = (
+                input("Enter release/fix version (or press Enter to skip): ").strip()
+                or None
+            )
+            assignee = (
+                input(
+                    "Enter assignee username ('me' for yourself, or press Enter to skip): "
+                ).strip()
+                or None
+            )
             max_results = input("Max results (default 50): ").strip()
             max_results = int(max_results) if max_results.isdigit() else 50
-            
-            current_issues = jira_manager.find_incomplete_tickets(project_name, release, assignee, max_results)
+
+            current_issues = jira_manager.find_incomplete_tickets(
+                project_name, release, assignee, max_results
+            )
             jira_manager.display_incomplete_tickets(current_issues)
 
         elif choice == "8":
             if current_issues:
                 jira_manager.batch_update_time_tracking(current_issues)
             else:
-                print("No tickets loaded. Please find incomplete tickets first (option 7).")
+                print(
+                    "No tickets loaded. Please find incomplete tickets first (option 7)."
+                )
 
         elif choice == "9":
             if jira_manager.connect():
