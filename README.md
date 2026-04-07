@@ -1,90 +1,114 @@
-# 🃏 Jora - Because Jira is a Joke!
+# Jora
 
-*Making ticket management less painful, one batch at a time* 😉
+A CLI tool for managing Jira tickets, designed for both human use and LLM agent workflows.
 
-A Python script that actually makes Jira usable (revolutionary concept!). Connect to your private Jira instance and manage tickets efficiently - without pulling your hair out.
+## Installation
 
-## Features (That Actually Work!)
+```bash
+uv tool install .
+```
 
-- 🔐 **Secure Authentication**: Connect to private Jira instances (unlike their broken SSO)
-- 🔍 **Smart Filtering**: Filter tickets by project, release, assignee (properly, not like the web UI)
-- 📝 **Batch Time Management**: Edit original estimates and log work in bulk (efficiency!)
-- � **Intelligent Ticket Detection**: Find incomplete tickets automatically
-- 📋 **Readable Ticket Details**: View ticket info without the web interface nightmare
-- 🎯 **Sane Command Interface**: Because clicking through 50 menus is ridiculous
+This installs `jora` to `~/.local/bin/jora`.
 
 ## Setup
 
-1. **Install Dependencies**:
-   ```bash
-   uv sync
-   ```
+```bash
+jora config init
+```
 
-2. **Get Jira API Token**:
-   - Since Wetrack uses SSO, you need an API token
-   - Follow the guide in `API_TOKEN_GUIDE.md` to create one
-   - Visit: https://id.atlassian.com/manage-profile/security/api-tokens
+Configuration is stored at `~/.config/jora/config.toml`. Multiple Jira instance profiles are supported.
 
-3. **Configure Environment**:
-   ```bash
-   # Quick setup (recommended)
-   uv run setup.py
-   
-   # OR manual setup
-   cp .env.template .env
-   # Edit .env with your email and API token
-   ```
+### Non-interactive setup
 
-4. **Run Jora (The Better Way)**:
-   ```bash
-   ./run.sh
-   # OR
-   uv run jira_manager.py
-   ```
+```bash
+jora config add-profile work \
+  --server https://your-jira.example.com \
+  --token YOUR_TOKEN \
+  --default-project MYPROJ \
+  --timezone Asia/Tokyo
+```
 
-## Usage Examples
+## Commands
 
-### Filtering Tickets
-- Filter by project: `ARTS`
-- Filter by release: `v2.1.0`
-- Filter by assignee: `me` or specific username
-- Combine filters for precise results
+### Issues
 
-### Time Management
-- **Original Estimate**: Set initial time estimates (e.g., `2h 30m`, `90m`, `1.5h`)
-- **Work Logging**: Log time spent with descriptions
-- **Flexible Formats**: Supports various time formats
+```bash
+jora issue get PROJ-123
+jora issue list --project PROJ --assignee me --status "In Progress"
+jora issue create --project PROJ --summary "Fix login timeout" --type Bug --estimate "2h"
+jora issue update PROJ-123 --estimate "4h" --assignee me
+jora issue comment PROJ-123 --body "Investigated, root cause found."
+jora issue comment PROJ-123        # list existing comments
+```
 
-### Supported Time Formats
-- `2h 30m` - 2 hours 30 minutes
-- `90m` - 90 minutes
-- `1.5h` - 1.5 hours
-- `none` - Clear/remove estimate
+### Work logging
 
-## Security Notes
+```bash
+jora worklog add PROJ-123 --time "2h 30m" --comment "Implemented fix"
+jora worklog add PROJ-123 --time "1h" --started "2026-04-07T14:00" --timezone Asia/Tokyo
+jora worklog list PROJ-123
+```
 
-- API tokens are stored in `.env` file (not version controlled)
-- SSL certificate verification enabled by default
-- Token input is masked using getpass
-- Works with SSO-enabled Jira instances
+### Search
 
-## Example Workflow (The Sane Way)
+```bash
+jora search "project = PROJ AND sprint in openSprints() AND assignee = currentUser()"
+jora search "status = 'In Progress'" --json --max 20
+```
 
-1. **Connect** to Jira instance (once, not every 5 minutes like the web UI)
-2. **Batch Find** incomplete tickets by project `ARTS`, assignee `me`
-3. **Review** tickets in a readable table (revolutionary!)
-4. **Batch Update** original estimates and work logs efficiently
-5. **Actually Get Work Done** instead of fighting with Jira's interface
-6. **Profit** from increased productivity 💰
+### Batch operations
 
-## Troubleshooting
+```bash
+jora batch find-incomplete --project PROJ --assignee me
+jora batch update --project PROJ --set-estimate "4h"   # non-interactive
+jora batch update --project PROJ                        # interactive (requires TTY)
+```
 
-- **SSL Issues**: Set `verify=False` in JIRA connection if needed
-- **Authentication**: Ensure correct username/password in `.env`
-- **Permissions**: Verify you have access to edit tickets and log work
+### Configuration
 
-## Requirements
+```bash
+jora config show
+jora config add-profile staging --server https://staging-jira.example.com --token TOKEN
+jora config set-default staging
+```
 
-- Python 3.9+
-- Access to https://your-jira-instance.example.com
-- Valid Jira credentials with appropriate permissions
+## LLM Agent Usage
+
+All read commands support `--json` for machine-parseable output. Use `--compact` on list/search commands to reduce token usage.
+
+```bash
+# Get structured ticket data
+jora issue get PROJ-123 --json
+
+# Search with JQL, pipe to jq
+jora search "assignee = currentUser() AND status != Done" --json | jq '.[].key'
+
+# Find incomplete tickets
+jora batch find-incomplete --project PROJ --assignee me --json
+
+# Non-interactive bulk update
+jora batch update --project PROJ --fix-version "v2.0" --set-estimate "4h"
+```
+
+**Exit codes:** 0 = success, 1 = error, 2 = not found, 3 = permission denied, 4 = invalid input.
+
+## Time formats
+
+Accepted: `2h 30m`, `2h30m`, `90m`, `1.5h`, `4h`.
+
+## Profile switching
+
+```bash
+jora --profile staging issue list --project PROJ
+JORA_PROFILE=staging jora issue list
+```
+
+## Environment variables
+
+| Variable | Description |
+|----------|-------------|
+| `JORA_TOKEN` | API token (overrides config/keyring) |
+| `JORA_SERVER` | Server URL override |
+| `JORA_PROFILE` | Active profile name |
+| `JORA_DEFAULT_PROJECT` | Default project for `issue list` |
+| `JIRA_API_TOKEN` | Legacy token variable (still supported) |
