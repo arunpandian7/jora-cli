@@ -79,6 +79,10 @@ class JoraClient:
     def current_user(self) -> str:
         return self._current_user
 
+    @property
+    def default_project(self) -> Optional[str]:
+        return self._profile.default_project
+
     @staticmethod
     def _assignee_clause(assignee: str) -> str:
         """Build a JQL assignee filter clause."""

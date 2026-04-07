@@ -65,7 +65,7 @@ def issue_list(
     client = get_client(ctx)
     try:
         query = client.build_filter_jql(
-            project=project,
+            project=project or client.default_project,
             fix_version=fix_version,
             assignee=assignee,
             status=status,

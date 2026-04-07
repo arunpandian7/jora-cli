@@ -30,7 +30,7 @@ def batch_find_incomplete(
     client = get_client(ctx)
     try:
         issues = client.find_incomplete_tickets(
-            project=project,
+            project=project or client.default_project,
             fix_version=fix_version,
             assignee=assignee,
             max_results=max_results,
