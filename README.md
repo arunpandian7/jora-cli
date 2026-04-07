@@ -74,6 +74,18 @@ jora config set-default staging
 
 ## LLM Agent Usage
 
+See **[PROMPTS.md](PROMPTS.md)** for a library of copy-paste prompts covering common workflows:
+filling estimates and worklogs for a release, summarising ticket discussions, posting
+LLM-generated summaries as comments, creating tickets from meeting notes, triaging backlogs,
+and more.
+
+To give an agent full awareness of Jora's commands and output schemas, run:
+
+```bash
+jora context          # paste into your system prompt (Markdown)
+jora context --json   # structured JSON for programmatic injection
+```
+
 All read commands support `--json` for machine-parseable output. Use `--compact` on list/search commands to reduce token usage.
 
 ```bash
