@@ -90,7 +90,7 @@ def save_config(config: JoraConfig) -> None:
     """Persist config to TOML file."""
     data: dict = {"defaults": config.defaults, "profiles": {}}
     for name, profile in config.profiles.items():
-        data["profiles"][name] = profile.model_dump(exclude_none=False)
+        data["profiles"][name] = profile.model_dump(exclude_none=True)
     _dump_toml(data, CONFIG_FILE)
 
 
