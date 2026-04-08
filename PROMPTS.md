@@ -250,6 +250,35 @@ For group 2, suggest an updated estimate based on time already spent.
 
 ---
 
+### Map dependencies before a release
+
+Ensure all blocking relationships are captured before cutting a release branch.
+
+```
+Before we cut the release for {RELEASE} in project {PROJECT}, I want to make sure all
+blocking dependencies are properly linked.
+
+1. First, show me the available link types:
+   `jora issue link-types --json`
+
+2. Fetch all in-progress and open tickets for this release:
+   `jora issue list --project {PROJECT} --fix-version {RELEASE} --json`
+
+3. For each ticket, fetch its links:
+   `jora issue links {KEY} --json`
+
+4. Build a dependency table showing:
+   - Which tickets block other tickets in this release
+   - Any tickets that are blocked by tickets outside this release (external blockers)
+
+5. If I confirm any missing blocking relationships, create them with:
+   `jora issue link {FROM_KEY} "Blocks" {TO_KEY} --json`
+
+Show me the final dependency map before making any changes.
+```
+
+---
+
 ## Code review & PR workflows
 
 ### Log review time and summarise a PR discussion

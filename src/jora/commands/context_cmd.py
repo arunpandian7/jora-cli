@@ -75,6 +75,24 @@ _COMMANDS = [
         "desc": "Non-interactive when --set-estimate given; requires TTY otherwise.",
         "example": "jora batch update --project PROJ --set-estimate 4h --json",
     },
+    {
+        "name": "issue link <KEY> <LINK_TYPE> <TARGET>",
+        "flags": "--json",
+        "desc": "Link two issues. Use 'jora issue link-types' to see available type names.",
+        "example": 'jora issue link PROJ-123 "Blocks" PROJ-456 --json',
+    },
+    {
+        "name": "issue links <KEY>",
+        "flags": "--json",
+        "desc": "List all links on an issue (blocked-by, relates-to, duplicates, etc.).",
+        "example": "jora issue links PROJ-123 --json",
+    },
+    {
+        "name": "issue link-types",
+        "flags": "--json",
+        "desc": "List all link type names available on this Jira instance.",
+        "example": "jora issue link-types --json",
+    },
 ]
 
 _SCHEMAS = {
@@ -147,6 +165,10 @@ _AGENT_PATTERNS = [
      "jora batch update --project PROJ --fix-version v2.1 --set-estimate 4h --json"),
     ("Create a ticket and capture the new key",
      "jora issue create --project PROJ --summary 'Investigate memory leak' --type Task --estimate 3h --json | jq -r '.issue_key'"),
+    ("Find available link types, then link a blocker",
+     "jora issue link-types --json && jora issue link PROJ-123 'Blocks' PROJ-456 --json"),
+    ("Inspect all dependencies of an issue before closing it",
+     "jora issue links PROJ-123 --json"),
 ]
 
 

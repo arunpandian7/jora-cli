@@ -1,4 +1,4 @@
-"""jora issue subcommands: get, list, create, update, comment."""
+"""jora issue subcommands: get, list, create, update, comment, link, links, link-types."""
 
 from __future__ import annotations
 
@@ -19,7 +19,9 @@ from ..utils.output import (
     output_json,
     output_success,
     print_comments,
+    print_issue_links,
     print_issues,
+    print_link_types,
 )
 
 app = typer.Typer(help="Read, create, and update Jira issues.")
@@ -175,6 +177,69 @@ def issue_comment(
     except NotFoundError as e:
         output_error(e.message, e.code, json_mode=as_json)
         raise typer.Exit(code=2)
+    except JoraError as e:
+        output_error(e.message, e.code, json_mode=as_json)
+        raise typer.Exit(code=1)
+
+
+@app.command("link")
+def issue_link(
+    ctx: typer.Context,
+    key: str = typer.Argument(help="Source issue key, e.g. PROJ-123"),
+    link_type: str = typer.Argument(help="Link type name, e.g. 'Blocks'. Run 'jora issue link-types' to list all."),
+    target: str = typer.Argument(help="Target issue key, e.g. PROJ-456"),
+    as_json: bool = typer.Option(False, "--json"),
+) -> None:
+    """Link two issues together.
+
+    Examples:
+      jora issue link PROJ-123 "Blocks" PROJ-456
+      jora issue link PROJ-123 "Relates" PROJ-789 --json
+    """
+    client = get_client(ctx)
+    try:
+        result = client.create_issue_link(key, link_type, target)
+        output_success(result, json_mode=as_json)
+    except NotFoundError as e:
+        output_error(e.message, e.code, json_mode=as_json)
+        raise typer.Exit(code=2)
+    except InvalidInputError as e:
+        output_error(e.message, e.code, json_mode=as_json)
+        raise typer.Exit(code=4)
+    except JoraError as e:
+        output_error(e.message, e.code, json_mode=as_json)
+        raise typer.Exit(code=1)
+
+
+@app.command("links")
+def issue_links(
+    ctx: typer.Context,
+    key: str = typer.Argument(help="Issue key, e.g. PROJ-123"),
+    as_json: bool = typer.Option(False, "--json"),
+) -> None:
+    """List all links on an issue."""
+    client = get_client(ctx)
+    try:
+        links = client.list_issue_links(key)
+        print_issue_links(links, json_mode=as_json)
+    except NotFoundError as e:
+        output_error(e.message, e.code, json_mode=as_json)
+        raise typer.Exit(code=2)
+    except JoraError as e:
+        output_error(e.message, e.code, json_mode=as_json)
+        raise typer.Exit(code=1)
+
+
+@app.command("link-types")
+def issue_link_types(
+    ctx: typer.Context,
+    as_json: bool = typer.Option(False, "--json"),
+) -> None:
+    """List all available link types for this Jira instance."""
+    client = get_client(ctx)
+    try:
+        types = client.list_link_types()
+        print_link_types(types, json_mode=as_json)
     except JoraError as e:
         output_error(e.message, e.code, json_mode=as_json)
         raise typer.Exit(code=1)

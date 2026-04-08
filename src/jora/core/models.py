@@ -145,6 +145,68 @@ class Comment(BaseModel):
         )
 
 
+class IssueLinkType(BaseModel):
+    id: str
+    name: str
+    inward: str
+    outward: str
+
+    @classmethod
+    def from_jira_link_type(cls, raw: Any) -> "IssueLinkType":
+        return cls(
+            id=str(raw.id),
+            name=getattr(raw, "name", ""),
+            inward=getattr(raw, "inward", ""),
+            outward=getattr(raw, "outward", ""),
+        )
+
+
+class IssueLink(BaseModel):
+    id: str
+    link_type: str
+    direction_text: str
+    linked_issue_key: str
+    linked_issue_summary: Optional[str] = None
+    linked_issue_status: Optional[str] = None
+
+    @classmethod
+    def from_jira_link(cls, raw: Any) -> "IssueLink":
+        """Convert a raw jira issuelink object to IssueLink.
+
+        Jira attaches either inwardIssue or outwardIssue depending on perspective.
+        We normalise to a single linked_issue_key + direction_text pair.
+        """
+        link_type = getattr(raw, "type", None)
+        type_name = getattr(link_type, "name", "")
+        inward_text = getattr(link_type, "inward", "")
+        outward_text = getattr(link_type, "outward", "")
+
+        outward_issue = getattr(raw, "outwardIssue", None)
+        inward_issue = getattr(raw, "inwardIssue", None)
+
+        if outward_issue is not None:
+            linked_key = getattr(outward_issue, "key", "")
+            direction_text = outward_text
+            summary = getattr(getattr(outward_issue, "fields", None), "summary", None)
+            status_obj = getattr(getattr(outward_issue, "fields", None), "status", None)
+            status = getattr(status_obj, "name", None) if status_obj else None
+        else:
+            linked_key = getattr(inward_issue, "key", "") if inward_issue else ""
+            direction_text = inward_text
+            summary = getattr(getattr(inward_issue, "fields", None), "summary", None) if inward_issue else None
+            status_obj = getattr(getattr(inward_issue, "fields", None), "status", None) if inward_issue else None
+            status = getattr(status_obj, "name", None) if status_obj else None
+
+        return cls(
+            id=str(raw.id),
+            link_type=type_name,
+            direction_text=direction_text,
+            linked_issue_key=linked_key,
+            linked_issue_summary=summary,
+            linked_issue_status=status,
+        )
+
+
 class OperationResult(BaseModel):
     success: bool
     issue_key: Optional[str] = None

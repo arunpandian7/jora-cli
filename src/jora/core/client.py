@@ -7,7 +7,7 @@ from typing import Any, List, Optional
 from jira import JIRA
 
 from .config import ProfileConfig, resolve_token
-from .models import Comment, Issue, OperationResult, Worklog
+from .models import Comment, Issue, IssueLink, IssueLinkType, OperationResult, Worklog
 from ..utils.time_utils import parse_datetime, parse_time_input, seconds_to_jira_format
 
 
@@ -367,6 +367,61 @@ class JoraClient:
             return [Worklog.from_jira_worklog(w) for w in raw_worklogs]
         except Exception as e:
             raise JiraAPIError(f"Failed to list worklogs for '{key}': {e}")
+
+    # ------------------------------------------------------------------
+    # Issue links
+    # ------------------------------------------------------------------
+
+    def create_issue_link(self, from_key: str, link_type: str, to_key: str) -> OperationResult:
+        """Create a link between two issues."""
+        try:
+            self._jira.create_issue_link(
+                type=link_type,
+                inwardIssue=from_key,
+                outwardIssue=to_key,
+            )
+            return OperationResult(
+                success=True,
+                issue_key=from_key,
+                message=f"Linked {from_key} → {link_type} → {to_key}",
+            )
+        except JoraError:
+            raise
+        except Exception as e:
+            msg = str(e)
+            if "404" in msg or "does not exist" in msg.lower():
+                raise NotFoundError(f"One of the issues '{from_key}' or '{to_key}' was not found.")
+            if "400" in msg:
+                raise InvalidInputError(f"Invalid link type or request: {msg}")
+            if "403" in msg or "permission" in msg.lower():
+                raise PermissionError(f"No permission to link issues: {msg}")
+            raise JiraAPIError(f"Failed to create link: {msg}")
+
+    def list_issue_links(self, key: str) -> List[IssueLink]:
+        """Return all issue links for an issue."""
+        try:
+            raw = self._jira.issue(key, fields="issuelinks,summary,status")
+            raw_links = getattr(raw.fields, "issuelinks", []) or []
+            return [IssueLink.from_jira_link(lnk) for lnk in raw_links]
+        except JoraError:
+            raise
+        except Exception as e:
+            msg = str(e)
+            if "404" in msg or "does not exist" in msg.lower():
+                raise NotFoundError(f"Issue '{key}' not found.")
+            if "403" in msg or "permission" in msg.lower():
+                raise PermissionError(f"No permission to read '{key}'.")
+            raise JiraAPIError(f"Failed to list links for '{key}': {msg}")
+
+    def list_link_types(self) -> List[IssueLinkType]:
+        """Return all available issue link types for this Jira instance."""
+        try:
+            raw_types = self._jira.issue_link_types()
+            return [IssueLinkType.from_jira_link_type(t) for t in raw_types]
+        except JoraError:
+            raise
+        except Exception as e:
+            raise JiraAPIError(f"Failed to fetch link types: {e}")
 
     # ------------------------------------------------------------------
     # Batch operations

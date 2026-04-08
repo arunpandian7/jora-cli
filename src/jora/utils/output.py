@@ -12,7 +12,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich import box
 
-from ..core.models import Comment, ErrorResult, Issue, OperationResult, Worklog
+from ..core.models import Comment, ErrorResult, Issue, IssueLink, IssueLinkType, OperationResult, Worklog
 
 console = Console()
 err_console = Console(stderr=True)
@@ -177,6 +177,53 @@ def print_worklogs(worklogs: List[Worklog], json_mode: bool = False) -> None:
             console.print("[yellow]No worklogs found.[/yellow]")
             return
         console.print(worklogs_table(worklogs))
+
+
+# ---------------------------------------------------------------------------
+# Comments
+# ---------------------------------------------------------------------------
+
+# ---------------------------------------------------------------------------
+# Issue links
+# ---------------------------------------------------------------------------
+
+def print_issue_links(links: List[IssueLink], json_mode: bool = False) -> None:
+    if json_mode:
+        output_json(links)
+    else:
+        if not links:
+            console.print("[yellow]No links found.[/yellow]")
+            return
+        table = Table(box=box.SIMPLE_HEAD, show_header=True, header_style="bold cyan")
+        table.add_column("Relationship", min_width=18)
+        table.add_column("Key", style="bold", min_width=12)
+        table.add_column("Summary", max_width=55)
+        table.add_column("Status", min_width=12)
+        for lnk in links:
+            table.add_row(
+                lnk.direction_text,
+                lnk.linked_issue_key,
+                lnk.linked_issue_summary or "",
+                lnk.linked_issue_status or "",
+            )
+        console.print(table)
+        console.print(f"[dim]{len(links)} link(s)[/dim]")
+
+
+def print_link_types(types: List[IssueLinkType], json_mode: bool = False) -> None:
+    if json_mode:
+        output_json(types)
+    else:
+        if not types:
+            console.print("[yellow]No link types found.[/yellow]")
+            return
+        table = Table(box=box.SIMPLE_HEAD, show_header=True, header_style="bold cyan")
+        table.add_column("Name", style="bold", min_width=15)
+        table.add_column("Outward (from source)", min_width=22)
+        table.add_column("Inward (to source)", min_width=22)
+        for t in types:
+            table.add_row(t.name, t.outward, t.inward)
+        console.print(table)
 
 
 # ---------------------------------------------------------------------------

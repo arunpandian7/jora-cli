@@ -5,7 +5,7 @@ A CLI tool for managing Jira tickets, designed for both human use and LLM agent 
 ## Installation
 
 ```bash
-uv tool install .
+uv tool install git+https://github.com/arunpandian7/jora-cli
 ```
 
 This installs `jora` to `~/.local/bin/jora`.
@@ -39,6 +39,14 @@ jora issue create --project PROJ --summary "Fix login timeout" --type Bug --esti
 jora issue update PROJ-123 --estimate "4h" --assignee me
 jora issue comment PROJ-123 --body "Investigated, root cause found."
 jora issue comment PROJ-123        # list existing comments
+```
+
+### Linking
+
+```bash
+jora issue link-types                              # list available link type names
+jora issue link PROJ-123 "Blocks" PROJ-456         # link two issues
+jora issue links PROJ-123                          # list all links on an issue
 ```
 
 ### Work logging
