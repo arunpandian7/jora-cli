@@ -7,7 +7,7 @@ from typing import Optional
 import typer
 
 from . import __version__
-from .commands import batch, config_cmd, context_cmd, issue, search, worklog
+from .commands import batch, config_cmd, context_cmd, issue, search, skill_cmd, worklog
 
 app = typer.Typer(
     name="jora",
@@ -23,6 +23,7 @@ app.add_typer(issue.app, name="issue")
 app.add_typer(worklog.app, name="worklog")
 app.add_typer(config_cmd.app, name="config")
 app.add_typer(batch.app, name="batch")
+app.add_typer(skill_cmd.app, name="skill")
 
 # Register standalone commands
 app.command("search")(search.search_cmd)
