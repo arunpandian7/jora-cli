@@ -52,6 +52,8 @@ jora issue links PROJ-123 --json
 - `--started` accepts `YYYY-MM-DD` or `YYYY-MM-DDTHH:MM`.
 - Exit codes: 0 success · 1 auth/API error · 2 not found · 3 permission denied · 4 invalid input.
 - Errors in `--json` mode: `{"error": "...", "code": "..."}` on stdout.
+- **Do not use Markdown in issue descriptions or comments.** Jira may not support Markdown (especially older instances). Use Jira wiki markup instead: `*bold*`, `_italic_`, `{{monospace}}`, `{code}...{code}`, `h2. Heading`, `* bullet`, `# numbered`.
+- **Multi-line descriptions/comments:** Use ANSI-C quoting `$'...'` with `\n` for newlines — e.g. `--description $'h2. Overview\nSome text\n\n* Bullet one\n* Bullet two'`. This is the correct way to pass multi-line strings in shell commands.
 
 ## Workflow pattern
 
